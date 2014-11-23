@@ -382,24 +382,25 @@ local function OnFrameUpdate(self, e)
 
     ------------------------------------------------------------------- Alpha --
     -- determine alpha value!
+    local fade = addon.db.profile.fade
     if (f.defaultAlpha == 1 and UnitExists('target'))
        or
        -- avoid fading low hp units
-       (((f.friend and addon.db.profile.fade.rules.avoidfriendhp) or
-        (not f.friend and addon.db.profile.fade.rules.avoidhostilehp)) and
-         f.health.percent <= addon.db.profile.fade.rules.avoidhpval
+       (((f.friend and fade.rules.avoidfriendhp) or
+        (not f.friend and fade.rules.avoidhostilehp)) and
+         f.health.percent <= fade.rules.avoidhpval
        )
        or
        -- avoid fading casting units
-       (f.castbar and addon.db.profile.fade.rules.avoidcast and f.castbar:IsShown())
+       (f.castbar and fade.rules.avoidcast and f.castbar:IsShown())
        or
        -- avoid fading mouse-over'd units
-       (addon.db.profile.fade.fademouse and f.highlighted)
+       (fade.fademouse and f.highlighted)
     then
         f.currentAlpha = 1
-    elseif UnitExists('target') or addon.db.profile.fade.fadeall then
+    elseif UnitExists('target') or fade.fadeall then
         -- if a target exists or fadeall is enabled...
-        f.currentAlpha = addon.db.profile.fade.fadedalpha or .3
+        f.currentAlpha = fade.fadedalpha or .3
     else
         -- nothing is targeted!
         f.currentAlpha = 1
