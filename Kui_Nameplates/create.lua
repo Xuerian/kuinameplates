@@ -173,6 +173,7 @@ end
 function addon:UpdateLevel(f, trivial)
     if not f.level.enabled then
         f.level:Hide()
+        f.level:SetWidth(.1)
         return
     end
 

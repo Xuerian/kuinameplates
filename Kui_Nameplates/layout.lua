@@ -10,9 +10,7 @@
    * customisation for raid target icons
    * ability to make certain auras bigger
    * add upper limit to number of auras
-
-   * fix horizontal text jitter
-   * fix castbar fades out on newly shown frames
+   * improve target highlighting
 ]]
 
 local kui = LibStub('Kui-1.0')
@@ -245,7 +243,10 @@ end
 local function OnFrameLeave(self)
     self.highlighted = false
 
-    if self.highlight then
+    if self.highlight and
+        (addon.db.profile.general.highlight_target and not self.target or
+        not addon.db.profile.general.highlight_target)
+    then
         self.highlight:Hide()
     end
 
@@ -275,6 +276,7 @@ local function OnFrameShow(self)
         end
     else
         f.level:Hide()
+        f.level:SetWidth(.1)
     end
 
     if f.state:IsVisible() then
@@ -326,9 +328,6 @@ local function OnFrameHide(self)
 
     f:SetFrameLevel(0)
 
-    -- force un-highlight
-    OnFrameLeave(self)
-
     if f.targetGlow then
         f.targetGlow:Hide()
     end
@@ -345,6 +344,12 @@ local function OnFrameHide(self)
     f.target    = nil
     f.targetDelay = nil
 	f.stickyHealthColour = nil
+
+    -- force un-highlight
+    OnFrameLeave(self)
+    if f.highlight then
+        f.highlight:Hide()
+    end
 
     -- unset stored health bar colours
     f.health.r, f.health.g, f.health.b, f.health.reset
@@ -536,6 +541,10 @@ local function UpdateFrameCritical(self)
                     self.targetGlow:Show()
                 end
 
+                if self.highlight and addon.db.profile.general.highlight_target then
+                    self.highlight:Show()
+                end
+
                 addon:SendMessage('KuiNameplates_PostTarget', self)
             end
         end
@@ -553,6 +562,10 @@ local function UpdateFrameCritical(self)
 
             if self.targetGlow then
                 self.targetGlow:Hide()
+            end
+
+            if self.highlight and addon.db.profile.general.highlight_target then
+                self.highlight:Hide()
             end
 
             if not self.highlighted and addon.db.profile.hp.mouseover then
@@ -623,7 +636,8 @@ end
 
 function addon:InitFrame(frame)
     -- container for kui objects!
-    frame.kui = CreateFrame('Frame', nil, WorldFrame)
+    frame.kui = CreateFrame('Frame', nil,
+        self.db.profile.general.compatibility and frame or WorldFrame)
     local f = frame.kui
 
     f.fontObjects = {}
@@ -729,6 +743,7 @@ function addon:InitFrame(frame)
         self:CreateLevel(frame, f)
     else
         f.level:Hide()
+        f.level:SetWidth(.1)
     end
 
     self:CreateName(frame, f)
