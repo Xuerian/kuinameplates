@@ -29,6 +29,39 @@ local select, strfind, strsplit, pairs, ipairs, unpack, tinsert, type, floor
     = select, strfind, strsplit, pairs, ipairs, unpack, tinsert, type, floor
 local UnitExists=UnitExists
 
+------------------------------------------------------------------ Fading --
+function SetAlphaFade(f, value)
+    if addon.db.profile.fade.smooth then
+        -- track changes in the alpha level and intercept them
+        if not f.lastAlpha or value ~= f.lastAlpha then
+            if not f.fadingTo or f.fadingTo ~= value then
+                if kui.frameIsFading(f) then
+                    kui.frameFadeRemoveFrame(f)
+                end
+
+                -- fade to the new value
+                f.fadingTo    = value
+                local alphaChange = (f.fadingTo - (f.lastAlpha or 0))
+
+                kui.frameFade(f, {
+                    mode        = alphaChange < 0 and 'OUT' or 'IN',
+                    timeToFade  = abs(alphaChange) * (addon.db.profile.fade.fadespeed or .5),
+                    startAlpha  = f.lastAlpha or 0,
+                    endAlpha    = f.fadingTo,
+                    finishedFunc = function()
+                        f.fadingTo = nil
+                    end,
+                })
+            end
+
+            f.lastAlpha = value
+        end
+    else
+        f:SetAlpha(value)
+    end
+    -- body
+end
+
 ------------------------------------------------------------- Frame functions --
 local function SetFrameCentre(f)
     -- using CENTER breaks pixel-perfectness with oddly sized frames
@@ -364,35 +397,7 @@ local function OnFrameUpdate(self, e)
         -- nothing is targeted!
         f.currentAlpha = 1
     end
-    ------------------------------------------------------------------ Fading --
-    if addon.db.profile.fade.smooth then
-        -- track changes in the alpha level and intercept them
-        if not f.lastAlpha or f.currentAlpha ~= f.lastAlpha then
-            if not f.fadingTo or f.fadingTo ~= f.currentAlpha then
-                if kui.frameIsFading(f) then
-                    kui.frameFadeRemoveFrame(f)
-                end
-
-                -- fade to the new value
-                f.fadingTo    = f.currentAlpha
-                local alphaChange = (f.fadingTo - (f.lastAlpha or 0))
-
-                kui.frameFade(f, {
-                    mode        = alphaChange < 0 and 'OUT' or 'IN',
-                    timeToFade  = abs(alphaChange) * (addon.db.profile.fade.fadespeed or .5),
-                    startAlpha  = f.lastAlpha or 0,
-                    endAlpha    = f.fadingTo,
-                    finishedFunc = function()
-                        f.fadingTo = nil
-                    end,
-                })
-            end
-
-            f.lastAlpha = f.currentAlpha
-        end
-    else
-        f:SetAlpha(f.currentAlpha)
-    end
+    SetAlphaFade(f, f.currentAlpha)
 
     -- call delayed updates
     if f.elapsed <= 0 then
