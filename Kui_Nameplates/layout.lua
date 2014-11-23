@@ -106,6 +106,7 @@ local function SetHealthColour(self,sticky,r,g,b)
         self.health.r, self.health.g, self.health.b = r, g, b
         self.health.reset, self.friend, self.player = nil, nil, nil
 
+        local neutral, hostile
         if g > .9 and r == 0 and b == 0 then
             -- friendly NPC
             self.friend = true
@@ -117,17 +118,23 @@ local function SetHealthColour(self,sticky,r,g,b)
             r, g, b = unpack(addon.db.profile.general.reactioncolours.playercol)
         elseif r > .9 and g == 0 and b == 0 then
             -- enemy NPC
+            hostile = true
             r, g, b = unpack(addon.db.profile.general.reactioncolours.hatedcol)
         elseif (r + g) > 1.8 and b == 0 then
             -- neutral NPC
+            neutral = true
             r, g, b = unpack(addon.db.profile.general.reactioncolours.neutralcol)
         elseif r < .6 and (r+g) == (r+b) then
             -- tapped NPC
+            self.tapped = true
             r, g, b = unpack(addon.db.profile.general.reactioncolours.tappedcol)
         else
             -- enemy player, use default UI colour
+            hostile = true
             self.player = true
         end
+        self.neutral = neutral
+        self.hostile = hostile
 
         self.health:SetStatusBarColor(r, g, b)
     end
