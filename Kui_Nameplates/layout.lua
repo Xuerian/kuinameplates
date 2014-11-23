@@ -385,6 +385,9 @@ local function OnFrameUpdate(self, e)
     local fade = addon.db.profile.fade
     if (f.defaultAlpha == 1 and UnitExists('target'))
        or
+       -- never fade potential aggro
+       (f.hostile)
+       or
        -- avoid fading low hp units
        (((f.friend and fade.rules.avoidfriendhp) or
         (not f.friend and fade.rules.avoidhostilehp)) and
