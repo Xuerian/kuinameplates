@@ -68,13 +68,12 @@ function addon:CreateHealthBar(frame, f)
 end
 function addon:UpdateHealthBar(f, trivial)
     f.health:ClearAllPoints()
+    f.health:SetPoint('BOTTOMLEFT', f.x+1, f.y+1)
 
     if trivial then
-        f.health:SetSize(self.sizes.frame.twidth-2, self.sizes.frame.theight-2)
-        f.health:SetPoint('BOTTOMLEFT', f.x+1, f.y+1)
-    elseif not trivial then
+        f.health:SetSize(self.sizes.frame.twidth - 2, self.sizes.frame.theight - 2)
+    else
         f.health:SetSize(self.sizes.frame.width - 2, self.sizes.frame.height - 2)
-        f.health:SetPoint('BOTTOMLEFT', f.x+1, f.y+1)
     end
 end
 ------------------------------------------------------------------- Highlight --
