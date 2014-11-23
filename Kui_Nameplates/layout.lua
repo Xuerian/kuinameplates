@@ -249,7 +249,7 @@ local function OnFrameLeave(self)
         self.highlight:Hide()
     end
 
-    if addon.db.profile.hp.mouseover and self.health and not self.target then
+    if (addon.db.profile.hp and addon.db.profile.hp.mouseover) and self.health and not self.target then
         self.health.p:Hide()
         if self.health.mo then self.health.mo:Hide() end
     end
