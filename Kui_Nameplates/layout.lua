@@ -424,6 +424,7 @@ local function OnFrameUpdate(self, e)
 end
 
 -- stuff that can be updated less often
+local RELEVANCE_LOW, RELEVANCE_HIGH = 0, 1
 local function UpdateFrame(self)
     -- periodically update the name in order to purge Unknowns due to lag, etc
     self:SetName()
@@ -434,6 +435,25 @@ local function UpdateFrame(self)
 
     -- reset/update health bar colour
     self:SetHealthColour()
+
+    -- update frame relevance
+    local relevance = (self.hostile or self.player) and RELEVANCE_HIGH or RELEVANCE_LOW
+    SetAlphaFade(self.health, relevance)
+    SetAlphaFade(self.bg, relevance)
+    SetAlphaFade(self.bg.fill, relevance)
+    SetAlphaFade(self.level, relevance)
+    if relevance == RELEVANCE_HIGH then
+        self.bg:Show()
+        self.bg.fill:Show()
+        self.level:Show()
+    else
+        self.bg:Hide()
+        self.bg.fill:Hide()
+        self.level:Hide()
+    end
+    if relevance ~= self.relevance then
+        self.relevance = relevance
+    end
 
     if self.DispatchPostShow then
         -- force initial health update, which relies on health colour
