@@ -313,6 +313,7 @@ local function OnFrameShow(self)
 
 	-- reset glow colour
     f:SetGlowColour()
+    f:SetHealthColour() -- Update color-based classification
 
     f.DoShow = true
     -- dispatch the PostShow message after the first UpdateFrame
