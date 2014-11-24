@@ -307,6 +307,9 @@ local function OnFrameShow(self)
         f.level:SetWidth(.1)
     end
 
+    f.level:SetAlpha(0)
+    UpdateFrameRelevance(self)
+
     if f.state:IsVisible() then
         -- hide the elite/rare dragon
         f.state:Hide()
