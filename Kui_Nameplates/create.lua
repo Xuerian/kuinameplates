@@ -172,15 +172,14 @@ function addon:CreateLevel(frame, f)
 end
 function addon:UpdateLevel(f, trivial)
     if not f.level.enabled then
-        f.level:Hide()
+        f.level:SetText('')
         f.level:SetWidth(.1)
         return
     end
 
     if trivial then
-        f.level:Hide()
+        f.level:SetText('')
     else
-        f.level:Show()
         f.level:SetPoint('TOPLEFT', f.health, 'BOTTOMLEFT',
                          2.5, self.db.profile.text.healthoffset + 4)
     end

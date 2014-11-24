@@ -265,7 +265,6 @@ local function OnFrameShow(self)
         if f.boss:IsVisible() then
             f.level:SetText('Boss')
             f.level:SetTextColor(1,.2,.2)
-            f.level:Show()
         elseif f.state:IsVisible() then
             if f.state:GetTexture() == "Interface\\Tooltips\\EliteNameplateIcon"
             then
@@ -275,7 +274,7 @@ local function OnFrameShow(self)
             end
         end
     else
-        f.level:Hide()
+        f.level:SetText('')
         f.level:SetWidth(.1)
     end
 
@@ -742,7 +741,7 @@ function addon:InitFrame(frame)
     if self.db.profile.text.level then
         self:CreateLevel(frame, f)
     else
-        f.level:Hide()
+        f.level:SetText('')
         f.level:SetWidth(.1)
     end
 
