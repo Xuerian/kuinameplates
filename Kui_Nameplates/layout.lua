@@ -28,7 +28,7 @@ local select, strfind, strsplit, pairs, ipairs, unpack, tinsert, type, floor
 local UnitExists=UnitExists
 
 ------------------------------------------------------------------ Fading --
-function SetAlphaFade(f, value)
+function SetAlphaFade(f, value, speed)
     if addon.db.profile.fade.smooth then
         -- track changes in the alpha level and intercept them
         if not f.lastAlpha or value ~= f.lastAlpha then
@@ -43,7 +43,7 @@ function SetAlphaFade(f, value)
 
                 kui.frameFade(f, {
                     mode        = alphaChange < 0 and 'OUT' or 'IN',
-                    timeToFade  = abs(alphaChange) * (addon.db.profile.fade.fadespeed or .5),
+                    timeToFade  = abs(alphaChange) * (speed or addon.db.profile.fade.fadespeed or .5),
                     startAlpha  = f.lastAlpha or 0,
                     endAlpha    = f.fadingTo,
                     finishedFunc = function()
@@ -58,6 +58,33 @@ function SetAlphaFade(f, value)
         f:SetAlpha(value)
     end
     -- body
+end
+
+
+local RELEVANCE_LOW, RELEVANCE_HIGH = 0, 1
+local function UpdateFrameRelevance(self)
+    if self.kui then self = self.kui end
+    -- update frame relevance
+    local relevance = (self.hostile or self.player or self.highlighted or self.target) and RELEVANCE_HIGH or RELEVANCE_LOW
+    if relevance ~= self.relevance then
+        self.relevance = relevance
+        SetAlphaFade(self.health, relevance, .3)
+        SetAlphaFade(self.bg, relevance, .3)
+        SetAlphaFade(self.bg.fill, relevance, .3)
+        SetAlphaFade(self.level, relevance, .3)
+        SetAlphaFade(self.highlight, relevance, .3)
+        SetAlphaFade(self.targetGlow, relevance, .3)
+        SetAlphaFade(self.glow, relevance, .3)
+    -- if relevance == RELEVANCE_HIGH then
+    --     self.bg:Show()
+    --     self.bg.fill:Show()
+    --     self.level:Show()
+    -- else
+    --     self.bg:Hide()
+    --     self.bg.fill:Hide()
+    --     self.level:Hide()
+    -- end
+    end
 end
 
 ------------------------------------------------------------- Frame functions --
@@ -154,7 +181,7 @@ local function SetGlowColour(self, r, g, b, a)
         a = .85
     end
 
-    self.bg:SetVertexColor(r, g, b, a)
+    self.bg:SetVertexColor(r, g, b, self.relevance == 1 and a or 0)
 end
 ---------------------------------------------------- Update health bar & text --
 local OnHealthValueChanged
@@ -239,6 +266,7 @@ local function OnFrameEnter(self)
         self.health.p:Show()
         if self.health.mo then self.health.mo:Show() end
     end
+    UpdateFrameRelevance(self)
 end
 local function OnFrameLeave(self)
     self.highlighted = false
@@ -254,6 +282,7 @@ local function OnFrameLeave(self)
         self.health.p:Hide()
         if self.health.mo then self.health.mo:Hide() end
     end
+    UpdateFrameRelevance(self)
 end
 local function OnFrameShow(self)
     self = self.kuiParent
@@ -428,7 +457,6 @@ local function OnFrameUpdate(self, e)
 end
 
 -- stuff that can be updated less often
-local RELEVANCE_LOW, RELEVANCE_HIGH = 0, 1
 local function UpdateFrame(self)
     -- periodically update the name in order to purge Unknowns due to lag, etc
     self:SetName()
@@ -440,24 +468,8 @@ local function UpdateFrame(self)
     -- reset/update health bar colour
     self:SetHealthColour()
 
-    -- update frame relevance
-    local relevance = (self.hostile or self.player) and RELEVANCE_HIGH or RELEVANCE_LOW
-    SetAlphaFade(self.health, relevance)
-    SetAlphaFade(self.bg, relevance)
-    SetAlphaFade(self.bg.fill, relevance)
-    SetAlphaFade(self.level, relevance)
-    if relevance == RELEVANCE_HIGH then
-        self.bg:Show()
-        self.bg.fill:Show()
-        self.level:Show()
-    else
-        self.bg:Hide()
-        self.bg.fill:Hide()
-        self.level:Hide()
-    end
-    if relevance ~= self.relevance then
-        self.relevance = relevance
-    end
+    UpdateFrameRelevance(self)
+
 
     if self.DispatchPostShow then
         -- force initial health update, which relies on health colour
@@ -543,6 +555,8 @@ local function UpdateFrameCritical(self)
                 if self.highlight and addon.db.profile.general.highlight_target then
                     self.highlight:Show()
                 end
+
+                UpdateFrameRelevance(self)
 
                 addon:SendMessage('KuiNameplates_PostTarget', self)
             end
